@@ -2,54 +2,52 @@ package com.example.backendapi.controller;
 
 import com.example.backendapi.model.SystemData;
 import com.example.backendapi.service.SystemDataService;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
-@Validated
-@Slf4j
-@Tag(name = "admin")
 @RequestMapping("/systemdata")
+@Validated // Optional but good for consistency
 public class SystemDataController {
 
-    @Autowired
-    private SystemDataService systemDataService;
+    private final SystemDataService systemDataService;
+
+    public SystemDataController(SystemDataService systemDataService) {
+        this.systemDataService = systemDataService;
+    }
 
     @GetMapping("/data")
-    public List<SystemData> getAllSystemData() {
+    public Page<SystemData> getAllSystemData(
+            @RequestParam(defaultValue = "0") int page, // Start with 0 for Spring's Pageable
+            @RequestParam(defaultValue = "10") int limit) {
 
-        return systemDataService.getAllSystemData();
+        PageRequest pageRequest = PageRequest.of(page, limit); // Pageable object
+        return systemDataService.getAllSystemData(pageRequest);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SystemData> getSystemDataById(@PathVariable String id) {
-        Optional<SystemData> systemData = systemDataService.getSystemDataById(id);
-        return systemData.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public SystemData getSystemDataById(@PathVariable String id) {
+        Optional<SystemData> systemDataOptional = systemDataService.getSystemDataById(id);
+        return systemDataOptional.orElseThrow(() -> new RuntimeException("SystemData not found"));
     }
 
     @PostMapping
-    public ResponseEntity<SystemData> createSystemData(@RequestBody SystemData systemData) {
-        SystemData createdSystemData = systemDataService.createSystemData(systemData);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdSystemData);
+    public SystemData createSystemData(@Valid @RequestBody SystemData systemData) { // Add @Valid
+        return systemDataService.createSystemData(systemData);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SystemData> updateSystemData(@PathVariable String id, @RequestBody SystemData systemData) {
-        SystemData updatedSystemData = systemDataService.updateSystemData(id, systemData);
-        return ResponseEntity.ok(updatedSystemData);
+    public SystemData updateSystemData(@PathVariable String id, @Valid @RequestBody SystemData systemData) { // Add @Valid
+        return systemDataService.updateSystemData(id, systemData);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSystemData(@PathVariable String id) {
+    public void deleteSystemData(@PathVariable String id) {
         systemDataService.deleteSystemData(id);
-        return ResponseEntity.noContent().build();
     }
 }

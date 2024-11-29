@@ -1,4 +1,5 @@
 /*
+
 package com.example.backendapi.controller;
 
 import com.example.backendapi.model.User;
@@ -24,4 +25,5 @@ public class AuthController {
         return authService.login(loginRequest.getEmail(), loginRequest.getPassword());
     }
 }
+
 */

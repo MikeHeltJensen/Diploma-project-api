@@ -1,3 +1,41 @@
+package com.example.backendapi.controller;
+
+import com.example.backendapi.model.User;
+import com.example.backendapi.repository.UserRepository;
+import jakarta.validation.constraints.Email;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    // POST - Register a new user
+    @PostMapping("/register")
+    public String registerUser(@RequestBody User user) {
+        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
+        if (existingUser.isPresent()) {
+            return "Email already registered";
+        }
+
+        userRepository.save(user);
+        return "User registered successfully";
+    }
+
+    // GET - Retrieve user info by username
+    @GetMapping("/{Email}")
+    public User getUserInfo(@PathVariable String Email) {
+        Optional<User> user = userRepository.findByEmail(Email);
+        return user.orElse(null);
+    }
+}
+
+
 /*
 package com.example.backendapi.controller;
 
